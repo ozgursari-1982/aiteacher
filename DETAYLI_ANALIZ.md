@@ -184,7 +184,7 @@ AI Öğretmen, öğrencilerin gerçek ders notlarını, ödevlerini ve çalışm
 
 #### ⚠️ API Key Güvenlik Açığı (KRİTİK)
 ```dart
-static const String _apiKey = 'AIzaSy***************************IOI'; // EXPOSED!
+static const String _apiKey = 'YOUR_API_KEY_HERE'; // EXPOSED IN CODE!
 ```
 - **SORUN**: Gemini API key **kaynak kodda açık şekilde** duruyor
 - **RİSK**: GitHub'a push edildiğinde herkes görebilir
@@ -199,7 +199,7 @@ static const String _apiKey = 'AIzaSy***************************IOI'; // EXPOSED
 #### ⚠️ Güvenlik Kurallarında Gevşeklik
 ```dart
 match /courses/{courseId} {
-  allow read: if request.auth != null; // Herkes herşeyi okuyabilir!
+  allow read: if request.auth != null; // Herkes her şeyi okuyabilir!
 }
 ```
 - **SORUN**: Kimlik doğrulaması yapan herkes tüm kursları okuyabilir
@@ -637,6 +637,8 @@ match /courses/{courseId} {
 | 📚 **Özellik Zenginliği** | 8/10 | Kapsamlı ama gamification vs. eksik |
 | 💻 **Kod Kalitesi** | 7/10 | İyi organize ama test ve docs eksik |
 | 🌍 **Ölçeklenebilirlik** | 7/10 | Firebase ölçeklenebilir ama maliyet belirsiz |
+| | | |
+| **📊 TOPLAM ORTALAMA** | **7.5/10** | **İyi, ama kritik iyileştirmeler gerekli** |
 
 ### 🎓 Eğitim Projesi Olarak Değerlendirme: 9/10
 
