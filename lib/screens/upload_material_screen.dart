@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
@@ -7,6 +8,7 @@ import '../models/study_material.dart';
 import '../services/firebase_storage_service.dart';
 import '../services/firestore_service.dart';
 import '../services/gemini_ai_service.dart';
+import '../services/teacher_style_analyzer.dart';
 
 class UploadMaterialScreen extends StatefulWidget {
   final Course course;
@@ -24,6 +26,7 @@ class _UploadMaterialScreenState extends State<UploadMaterialScreen> {
   final _storageService = FirebaseStorageService();
   final _firestoreService = FirestoreService();
   final _aiService = GeminiAIService();
+  final _teacherAnalyzer = TeacherStyleAnalyzer();
   final _imagePicker = ImagePicker();
 
   File? _selectedFile;
@@ -153,44 +156,74 @@ class _UploadMaterialScreenState extends State<UploadMaterialScreen> {
     
     while (retryCount < maxRetries) {
       try {
-        print('🤖 GERÇEK DOSYA İÇERİĞİ analiz ediliyor (Deneme ${retryCount + 1}/$maxRetries)...');
+        print('🎓 ÖĞRETMEN STİLİ ANALİZİ başlatılıyor (Deneme ${retryCount + 1}/$maxRetries)...');
         print('📁 Dosya yolu: $localFilePath');
         
-        // GERÇEK DOSYA İÇERİĞİ ile AI analizi (Vision API)
-        final analysis = await _aiService.analyzeStudyMaterialWithFile(
+        // ✅ CORRECT: Use teacher style analysis
+        final analysisResult = await _teacherAnalyzer.analyzeDocumentForTeacherStyle(
           filePath: localFilePath,
           courseName: widget.course.name,
-          title: _titleController.text,
-          description: _descriptionController.text.isNotEmpty ? _descriptionController.text : null,
+          documentTitle: _titleController.text,
+          teacherName: widget.course.teacherName ?? 'Öğretmen',
+          documentId: materialId,
         );
 
-        // Analizi Firestore'a kaydet
-        await _firestoreService.updateMaterialAnalysis(materialId, analysis);
+        // Convert DocumentAnalysis to JSON string for Firestore
+        final analysisJson = json.encode({
+          'documentType': analysisResult.documentType,
+          'mainTopic': analysisResult.mainTopic,
+          'subTopics': analysisResult.subTopics,
+          'topicDepth': analysisResult.topicDepth,
+          'questions': analysisResult.questions.map((q) => {
+            'questionNumber': q.questionNumber,
+            'type': q.type,
+            'difficulty': q.difficulty,
+            'topic': q.topic,
+            'pageNumber': q.pageNumber,
+            'preview': q.preview,
+          }).toList(),
+          'teacherStyleInsights': {
+            'emphasizedTopics': analysisResult.teacherStyleInsights.emphasizedTopics,
+            'preferredQuestionTypes': analysisResult.teacherStyleInsights.preferredQuestionTypes,
+            'difficultyPreference': analysisResult.teacherStyleInsights.difficultyPreference,
+            'usesVisuals': analysisResult.teacherStyleInsights.usesVisuals,
+            'usesRealLifeExamples': analysisResult.teacherStyleInsights.usesRealLifeExamples,
+            'focusOnMemorization': analysisResult.teacherStyleInsights.focusOnMemorization,
+            'additionalNotes': analysisResult.teacherStyleInsights.additionalNotes,
+          },
+          'examPredictionHints': {
+            'likelyQuestionCount': analysisResult.examPredictionHints.likelyQuestionCount,
+            'confidence': analysisResult.examPredictionHints.confidence,
+            'reasoning': analysisResult.examPredictionHints.reasoning,
+          },
+          'analyzedAt': analysisResult.analyzedAt.toIso8601String(),
+        });
+
+        // Save structured JSON to Firestore
+        await _firestoreService.updateMaterialAnalysis(materialId, analysisJson);
         
-        print('✅ GERÇEK DOSYA İÇERİĞİ başarıyla analiz edildi: $materialId');
-        return; // Başarılı, döngüden çık
+        print('✅ ÖĞRETMEN STİLİ ANALİZİ tamamlandı: ${analysisResult.questions.length} soru bulundu');
+        return; // Success, exit loop
         
       } catch (e) {
         retryCount++;
-        print('❌ Dosya analizi hatası (Deneme $retryCount): $e');
+        print('❌ Öğretmen stili analiz hatası (Deneme $retryCount): $e');
         
         if (retryCount >= maxRetries) {
-          print('⚠️ Dosya analizi $maxRetries denemeden sonra başarısız oldu');
-          // Hata bildirimi
+          print('⚠️ Analiz $maxRetries denemeden sonra başarısız oldu');
+          // Save error message
           await _firestoreService.updateMaterialAnalysis(
             materialId,
-            '❌ HATA: Dosya içeriği analiz edilemedi.\n\n'
-            'Sebep: $e\n\n'
-            '🔄 Lütfen:\n'
-            '• Dosyanın bozuk olmadığından emin olun\n'
-            '• Dosya boyutunu kontrol edin (max 20MB)\n'
-            '• Desteklenen format: JPG, PNG, PDF\n'
-            '• Bu materyali silin ve yeniden yükleyin'
+            json.encode({
+              'error': true,
+              'message': 'Dosya analiz edilemedi: $e',
+              'timestamp': DateTime.now().toIso8601String(),
+            })
           );
           return;
         }
         
-        // Tekrar denemeden önce kısa bekle
+        // Wait before retry
         await Future.delayed(Duration(seconds: 2 * retryCount));
       }
     }
