@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
 import '../models/teacher_style_profile.dart';
+import '../models/test.dart';
+import '../services/teacher_style_analyzer.dart';
+import '../services/firestore_service.dart';
 
 class TeacherAnalysisScreen extends StatelessWidget {
   final TeacherStyleProfile profile;
 
   const TeacherAnalysisScreen({super.key, required this.profile});
+
+  static final TeacherStyleAnalyzer _teacherAnalyzer = TeacherStyleAnalyzer();
+  static final FirestoreService _firestoreService = FirestoreService();
 
   @override
   Widget build(BuildContext context) {
@@ -328,24 +334,101 @@ class TeacherAnalysisScreen extends StatelessWidget {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton.icon(
-        onPressed: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Gerçekçi sınav simülasyonu özelliği yakında!'),
-            ),
-          );
-        },
+        onPressed: () => _generateRealisticExam(context),
         icon: const Icon(Icons.science, size: 28),
         label: const Text(
-          'GERÇEK SINAV SİMÜLASYONU OLUŞTUR',
+          '🎯 GERÇEK SINAV SİMÜLASYONU OLUŞTUR',
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         style: ElevatedButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 16),
-          backgroundColor: Colors.green,
+          backgroundColor: Colors.orange,
           foregroundColor: Colors.white,
         ),
       ),
     );
+  }
+
+  Future<void> _generateRealisticExam(BuildContext context) async {
+    // Show loading dialog
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => Center(
+        child: Card(
+          margin: const EdgeInsets.all(24),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const CircularProgressIndicator(),
+                const SizedBox(height: 16),
+                Text(
+                  'AI gerçekçi sınav oluşturuyor...\nÖğretmen: ${profile.teacherName}',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 14),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    try {
+      // Generate realistic exam questions
+      final questions = await _teacherAnalyzer.generateRealisticExam(
+        teacherProfile: profile,
+        questionCount: 10,
+      );
+
+      if (questions.isEmpty) {
+        throw Exception('Soru oluşturulamadı');
+      }
+
+      // Extract courseId from profileId (format: courseId_profile)
+      final courseId = profile.id.split('_')[0];
+
+      // Create test
+      final test = Test(
+        id: '',
+        courseId: courseId,
+        studentId: profile.studentId,
+        title: '🎯 Gerçek Sınav Simülasyonu - ${profile.courseName}',
+        questions: questions,
+        createdAt: DateTime.now(),
+      );
+
+      // Save to Firestore
+      await _firestoreService.addTest(test);
+
+      if (!context.mounted) return;
+      Navigator.pop(context); // Close loading dialog
+
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('✅ ${questions.length} soruluk gerçekçi sınav oluşturuldu!'),
+          backgroundColor: Colors.green,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+
+      // Navigate back to course detail (which will show the new test)
+      Navigator.pop(context);
+      
+    } catch (e) {
+      if (!context.mounted) return;
+      Navigator.pop(context); // Close loading dialog
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('❌ Sınav oluşturulamadı: $e'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 4),
+        ),
+      );
+    }
   }
 }
