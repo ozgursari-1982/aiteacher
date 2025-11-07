@@ -149,6 +149,7 @@ JSON ÇIKTI (sadece JSON):
     try {
       print('🎯 Öğretmen profili oluşturuluyor...');
       
+      // Get all materials
       final materials = await _firestoreService
           .getCourseMaterials(courseId)
           .first;
@@ -158,28 +159,185 @@ JSON ÇIKTI (sadece JSON):
         return null;
       }
 
-      // Basitleştirilmiş profil (gerçek implementasyonda tüm analizler toplanır)
+      // Parse AI analyses from materials
+      Map<String, int> questionTypes = {};
+      Map<String, TopicAnalysis> topics = {};
+      Map<String, int> difficulties = {};
+      List<QuestionSource> allSources = [];
+      int totalQuestions = 0;
+
+      for (var material in materials) {
+        if (material.aiAnalysis == null || material.aiAnalysis!.isEmpty) {
+          print('⚠️ Materyal analizi eksik: ${material.title}');
+          continue;
+        }
+
+        try {
+          // Parse the AI analysis JSON
+          final analysisData = json.decode(material.aiAnalysis!);
+          
+          // Extract main topic
+          final mainTopic = analysisData['mainTopic'] ?? 'Bilinmeyen Konu';
+          
+          // Update or create topic analysis
+          if (!topics.containsKey(mainTopic)) {
+            topics[mainTopic] = TopicAnalysis(
+              topicName: mainTopic,
+              questionCount: 0,
+              averageDifficulty: 0.0,
+              subTopics: [],
+              sourceDocuments: [],
+              examProbability: 0.0,
+              teacherEmphasis: 0.0,
+            );
+          }
+          topics[mainTopic]!.questionCount++;
+          
+          // Extract sub topics
+          final subTopics = analysisData['subTopics'] as List?;
+          if (subTopics != null) {
+            for (var subTopic in subTopics) {
+              final topicName = subTopic.toString();
+              if (!topics[mainTopic]!.subTopics.contains(topicName)) {
+                topics[mainTopic]!.subTopics.add(topicName);
+              }
+            }
+          }
+          
+          // Add document reference to topic
+          topics[mainTopic]!.sourceDocuments.add(DocumentReference(
+            documentId: material.id,
+            documentTitle: material.title,
+            pages: [],
+            questionCount: 0,
+            difficultyLevel: analysisData['topicDepth'] ?? 'orta',
+          ));
+          
+          // Extract questions
+          final questions = analysisData['questions'] as List?;
+          if (questions != null) {
+            for (var q in questions) {
+              totalQuestions++;
+              topics[mainTopic]!.questionCount++;
+              
+              // Count question types
+              final type = q['type'] ?? 'diğer';
+              questionTypes[type] = (questionTypes[type] ?? 0) + 1;
+              
+              // Count difficulties
+              final difficulty = q['difficulty'] ?? 'orta';
+              difficulties[difficulty] = (difficulties[difficulty] ?? 0) + 1;
+              
+              // Add to sources
+              allSources.add(QuestionSource(
+                documentId: material.id,
+                documentTitle: material.title,
+                questionType: type,
+                topic: q['topic'] ?? mainTopic,
+                difficulty: difficulty,
+                pageNumber: q['pageNumber'] ?? 0,
+                questionPreview: q['preview'] ?? '',
+              ));
+              
+              // Update document question count
+              topics[mainTopic]!.sourceDocuments.last.questionCount++;
+            }
+          }
+          
+          print('✅ ${material.title}: ${questions?.length ?? 0} soru');
+        } catch (e) {
+          print('⚠️ Analiz parse hatası (${material.title}): $e');
+        }
+      }
+
+      // Calculate average difficulty and exam probability for topics
+      for (var topic in topics.values) {
+        if (topic.questionCount > 0 && totalQuestions > 0) {
+          topic.examProbability = (topic.questionCount / totalQuestions).clamp(0.0, 1.0);
+          topic.teacherEmphasis = topic.examProbability;
+        }
+      }
+
+      // Get completed tests for additional analysis
+      final tests = await _firestoreService.getTests(studentId, courseId);
+      final completedTests = tests.where((t) => t.isCompleted).toList();
+      
+      print('📊 İstatistikler:');
+      print('   - Toplam Soru: $totalQuestions');
+      print('   - Soru Tipleri: ${questionTypes.length}');
+      print('   - Konular: ${topics.length}');
+      print('   - Tamamlanan Test: ${completedTests.length}');
+
+      // Generate teacher personality with AI
+      final personalityPrompt = '''
+Bir öğretmen profili oluştur:
+
+DERS: $courseName
+ÖĞRETMEN: $teacherName
+ANALİZ EDİLEN BELGE: ${materials.length}
+TOPLAM SORU: $totalQuestions
+
+SORU TİPİ DAĞILIMI: ${questionTypes.toString()}
+KONU DAĞILIMI: ${topics.keys.toList().toString()}
+ZORLUK DAĞILIMI: ${difficulties.toString()}
+
+GÖREV: Bu verilere dayanarak öğretmenin öğretim stilini 2-3 cümlede açıkla.
+Sadece açıklamayı ver, JSON veya başka format olmasın.
+''';
+
+      String teacherPersonality = '';
+      try {
+        final response = await _aiService.model.generateContent([
+          Content.text(personalityPrompt)
+        ]);
+        teacherPersonality = response.text ?? 'Öğretmen profili ${materials.length} belgeden oluşturuldu.';
+      } catch (e) {
+        print('⚠️ Kişilik metni oluşturulamadı: $e');
+        teacherPersonality = 'Bu öğretmen ${materials.length} belgede toplam $totalQuestions soru sormuş. ${questionTypes.keys.take(2).join(" ve ")} tipi sorular tercih ediyor.';
+      }
+
+      // Build exam prediction with PredictedQuestion objects
+      final predictedQuestionsMap = <String, PredictedQuestion>{};
+      final sortedTopics = topics.entries.toList()
+        ..sort((a, b) => b.value.questionCount.compareTo(a.value.questionCount));
+      
+      for (var entry in sortedTopics.take(5)) {
+        predictedQuestionsMap[entry.key] = PredictedQuestion(
+          topic: entry.key,
+          predictedQuestionCount: (entry.value.questionCount * 0.8).round(),
+          confidence: entry.value.examProbability,
+          reasoning: 'Bu konu ${entry.value.questionCount} soruda işlenmiş.',
+        );
+      }
+
+      final examPrediction = ExamPrediction(
+        predictedQuestions: predictedQuestionsMap,
+        criticalTopics: sortedTopics
+            .take(3)
+            .map((e) => e.key)
+            .toList(),
+        possibleTopics: topics.keys.toList(),
+        unlikelyTopics: [],
+        reasoning: sortedTopics.isNotEmpty 
+            ? 'Öğretmen ${sortedTopics.first.key} konusuna daha fazla odaklanıyor.' 
+            : 'Öğretmen profili oluşturuldu.',
+        overallConfidence: totalQuestions >= 20 ? 0.85 : 0.60,
+      );
+
       final profile = TeacherStyleProfile(
         id: '${courseId}_profile',
         teacherName: teacherName,
         courseName: courseName,
         studentId: studentId,
-        questionTypeDistribution: {},
-        topicDistribution: {},
-        difficultyDistribution: {},
-        questionSources: [],
+        questionTypeDistribution: questionTypes,
+        topicDistribution: topics,
+        difficultyDistribution: difficulties,
+        questionSources: allSources,
         totalDocumentsAnalyzed: materials.length,
-        totalQuestionsFound: 0,
+        totalQuestionsFound: totalQuestions,
         lastUpdated: DateTime.now(),
-        teacherPersonality: 'Öğretmen profili ${materials.length} belgeden oluşturuluyor...',
-        examPrediction: ExamPrediction(
-          predictedQuestions: {},
-          criticalTopics: [],
-          possibleTopics: [],
-          unlikelyTopics: [],
-          reasoning: '',
-          overallConfidence: 0.0,
-        ),
+        teacherPersonality: teacherPersonality,
+        examPrediction: examPrediction,
       );
       
       print('✅ Profil oluşturuldu!');
