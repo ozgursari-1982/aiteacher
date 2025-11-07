@@ -13,6 +13,9 @@ import 'test_review_screen.dart';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
+import '../services/teacher_style_analyzer.dart';
+import '../models/teacher_style_profile.dart';
+import 'teacher_analysis_screen.dart';
 
 class CourseDetailScreen extends StatefulWidget {
   final Course course;
@@ -28,11 +31,12 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> with SingleTick
   final _firestoreService = FirestoreService();
   final _storageService = FirebaseStorageService();
   final _aiService = GeminiAIService();
+  final _teacherAnalyzer = TeacherStyleAnalyzer();
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
   }
 
   @override
@@ -52,6 +56,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> with SingleTick
           tabs: const [
             Tab(text: 'Materyaller'),
             Tab(text: 'Testler'),
+            Tab(text: 'Öğretmen Analizi'),
           ],
         ),
       ),
@@ -60,9 +65,10 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> with SingleTick
         children: [
           _buildMaterialsTab(),
           _buildTestsTab(),
+          _buildTeacherAnalysisTab(),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: _tabController.index == 2 ? null : FloatingActionButton.extended(
         onPressed: () {
           if (_tabController.index == 0) {
             Navigator.push(
@@ -657,6 +663,121 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> with SingleTick
         );
       }
     }
+  }
+
+  Widget _buildTeacherAnalysisTab() {
+    return StreamBuilder<List<StudyMaterial>>(
+      stream: _firestoreService.getCourseMaterials(widget.course.id),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        final materials = snapshot.data ?? [];
+        final analyzedMaterials = materials.where((m) => m.aiAnalysis != null).toList();
+
+        if (analyzedMaterials.length < 3) {
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(32.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.school_outlined, size: 80, color: Colors.grey[400]),
+                  const SizedBox(height: 24),
+                  Text(
+                    'Öğretmen Analizi',
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Öğretmeninizin sınav stilini analiz etmek için en az 3 materyal yüklemeniz gerekiyor.',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  LinearProgressIndicator(
+                    value: analyzedMaterials.length / 3,
+                    backgroundColor: Colors.grey[200],
+                    minHeight: 8,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '${analyzedMaterials.length}/3 materyal analiz edildi',
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      _tabController.animateTo(0);
+                    },
+                    icon: const Icon(Icons.upload_file),
+                    label: const Text('Materyal Yükle'),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+        return FutureBuilder<TeacherStyleProfile?>(
+          future: _teacherAnalyzer.buildTeacherProfile(
+            courseId: widget.course.id,
+            studentId: widget.course.studentId,
+            courseName: widget.course.name,
+            teacherName: widget.course.teacherName ?? 'Öğretmen',
+          ),
+          builder: (context, profileSnapshot) {
+            if (profileSnapshot.connectionState == ConnectionState.waiting) {
+              return const Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircularProgressIndicator(),
+                    SizedBox(height: 16),
+                    Text('AI öğretmen profilini oluşturuyor...'),
+                  ],
+                ),
+              );
+            }
+
+            if (profileSnapshot.hasError || profileSnapshot.data == null) {
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(32.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.error_outline, size: 80, color: Colors.red[300]),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Profil oluşturulamadı',
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        '${profileSnapshot.error}',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.grey[600]),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }
+
+            return TeacherAnalysisScreen(profile: profileSnapshot.data!);
+          },
+        );
+      },
+    );
   }
 }
 
