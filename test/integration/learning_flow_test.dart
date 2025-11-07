@@ -364,9 +364,14 @@ void main() {
       expect(dailyTests.first.score, 60.0);
       expect(dailyTests.last.score, 90.0);
 
-      final improvement = dailyTests.last.score! - dailyTests.first.score!;
-      expect(improvement, 30.0);
-      expect(improvement, greaterThan(0)); // Shows progress
+      final firstScore = dailyTests.first.score;
+      final lastScore = dailyTests.last.score;
+      
+      if (firstScore != null && lastScore != null) {
+        final improvement = lastScore - firstScore;
+        expect(improvement, 30.0);
+        expect(improvement, greaterThan(0)); // Shows progress
+      }
     });
   });
 

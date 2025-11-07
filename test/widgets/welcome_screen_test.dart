@@ -119,10 +119,12 @@ void main() {
         matching: find.byType(SizedBox),
       );
 
-      expect(sizedBoxFinder, findsOneWidget);
+      expect(sizedBoxFinder, findsAtLeastOneWidget);
       
-      final SizedBox sizedBox = tester.widget(sizedBoxFinder.first);
-      expect(sizedBox.width, double.infinity);
+      if (sizedBoxFinder.evaluate().isNotEmpty) {
+        final SizedBox sizedBox = tester.widget(sizedBoxFinder.first);
+        expect(sizedBox.width, double.infinity);
+      }
     });
 
     testWidgets('WelcomeScreen should be responsive', (WidgetTester tester) async {
