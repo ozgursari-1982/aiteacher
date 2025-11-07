@@ -122,7 +122,7 @@ test/
 ### Dart/Flutter Best Practices
 - Use `const` constructors where possible for performance
 - Follow Flutter naming conventions (camelCase for variables, PascalCase for classes)
-- Use meaningful variable names in Turkish for domain concepts (e.g., `dersler`, `ogrenci`, `sinav`)
+- Use meaningful variable names in Turkish for domain concepts (e.g., `dersler`, `öğrenci`, `sınav`)
 - Leverage Material Design 3 components
 - Implement proper error handling with try-catch blocks
 - Use loading states for async operations
