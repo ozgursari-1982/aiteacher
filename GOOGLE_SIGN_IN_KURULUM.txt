@@ -1,0 +1,67 @@
+╔══════════════════════════════════════════════════════════╗
+║         GOOGLE SIGN-IN SHA-1 FİNGERPRİNT EKLEME         ║
+╚══════════════════════════════════════════════════════════╝
+
+📍 SİZİN SHA-1 FİNGERPRİNT:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+2C:8A:4B:5B:79:DA:1D:1B:95:84:C8:A0:18:C2:AA:E4:8C:E0:DE:48
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+📍 FİREBASE CONSOLE'DA EKLEME ADIMLARI:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Firebase Console'a gidin:
+   https://console.firebase.google.com/project/ai-teacher-project-5eea8/settings/general
+
+2. Sayfada aşağı kaydırın "Your apps" bölümüne
+
+3. Android uygulama kartını bulun (ELE L29 veya Android ikonu)
+
+4. "Add fingerprint" butonuna tıklayın
+
+5. SHA-1 fingerprint'i yapıştırın:
+   2C:8A:4B:5B:79:DA:1D:1B:95:84:C8:A0:18:C2:AA:E4:8C:E0:DE:48
+
+6. "Save" tıklayın
+
+7. BAŞKA BİR ŞEY YAPMANIZA GEREK YOK!
+   google-services.json otomatik güncellenir.
+
+
+📍 UYGULAMAYI YENİDEN BAŞLATIN:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SHA-1 ekledikten sonra uygulamayı kapatıp yeniden açın:
+
+1. Telefonda uygulamayı kapatın
+2. Yeniden açın
+3. "Google ile Giriş Yap" butonuna tıklayın
+4. Google hesabınızı seçin
+5. ✅ ÇALIŞMALI!
+
+
+📍 SORUN GİDERME:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Hala çalışmazsa:
+
+1. Flutter'ı temizleyin ve yeniden yükleyin:
+   cd c:\Users\Neu\Desktop\Enes\ai_teacher_app
+   flutter clean
+   flutter pub get
+   flutter run -d XPH0219B25007030
+
+2. 5-10 dakika bekleyin
+   Firebase'in değişiklikleri yayması zaman alabilir
+
+
+✅ TAMAMLANDI!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SHA-1 fingerprint eklendikten sonra Google Sign-In çalışacak!
+
+Başarılar! 🎉
+

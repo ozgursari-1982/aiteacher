@@ -1,0 +1,97 @@
+╔════════════════════════════════════════════════════════╗
+║     FIRESTORE DATABASE HIZLI KURULUM REHBERİ          ║
+╚════════════════════════════════════════════════════════╝
+
+📍 1. ADIM - Database Oluştur
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Link: https://console.firebase.google.com/project/ai-teacher-project-5eea8/firestore
+
+"Create database" butonuna tıklayın
+
+
+📍 2. ADIM - Ayarları Seçin
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✓ Edition: Standard edition (seçili kalsın)
+✓ Database ID: (default)  ← Boş bırakmayın, (default) yazın
+✓ Location: europe-west3 (Frankfurt) VEYA eur3
+  
+  Location tam listesi:
+  • eur3 (Europe)
+  • europe-west1 (Belgium)
+  • europe-west3 (Frankfurt)
+  
+  ⚠️ Location sonradan değiştirilEMEZ!
+
+
+📍 3. ADIM - Security Rules
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✓ "Start in test mode" SEÇİN (30 gün açık erişim)
+
+⚠️ Production mode seçmeyin! Test mode ile başlayacağız,
+   sonra güvenlik kurallarını güncelleyeceğiz.
+
+
+📍 4. ADIM - Oluştur
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+"Enable" veya "Create" butonuna tıklayın
+
+Database oluşması 10-30 saniye sürebilir, bekleyin...
+
+
+📍 5. ADIM - Güvenlik Kurallarını Güncelleyin
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Database oluştuktan sonra:
+
+1. "Rules" sekmesine gidin
+2. Aşağıdaki kuralları kopyalayıp yapıştırın
+3. "Publish" tıklayın
+
+─────────────────────────────────────────────────────────
+KURALLAR (Kopyalayın):
+─────────────────────────────────────────────────────────
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    match /students/{studentId} {
+      allow read, write: if request.auth != null && request.auth.uid == studentId;
+    }
+    
+    match /courses/{courseId} {
+      allow read, write: if request.auth != null && 
+        request.auth.uid == resource.data.studentId;
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.studentId;
+    }
+    
+    match /materials/{materialId} {
+      allow read, write: if request.auth != null && 
+        request.auth.uid == resource.data.studentId;
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.studentId;
+    }
+    
+    match /tests/{testId} {
+      allow read, write: if request.auth != null && 
+        request.auth.uid == resource.data.studentId;
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.studentId;
+    }
+  }
+}
+
+─────────────────────────────────────────────────────────
+
+
+✅ TAMAMLANDI!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Firestore Database hazır. Şimdi:
+1. Authentication'ı etkinleştirin
+2. Storage'ı etkinleştirin
+3. flutter run ile uygulamayı çalıştırın
+
+Başarılar! 🎉
+

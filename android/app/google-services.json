@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "541014953985",
+    "project_id": "ai-teacher-project-5eea8",
+    "storage_bucket": "ai-teacher-project-5eea8.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:541014953985:android:c5eea748fa7f22628cb000",
+        "android_client_info": {
+          "package_name": "com.example.ai_teacher_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "541014953985-bdo4tfk9q6lht8jqtat1mu0hg8o0dv4r.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBKaWdMwSUWyHo9KsXb1KAjTNZjiBTryUI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "541014953985-bdo4tfk9q6lht8jqtat1mu0hg8o0dv4r.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
