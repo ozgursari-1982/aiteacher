@@ -11,7 +11,7 @@ AI Öğretmen (AI Teacher) is a personalized AI-powered educational Flutter appl
 
 ### Frontend
 - **Framework:** Flutter 3.9.2+
-- **Language:** Dart 3.0+
+- **Language:** Dart SDK ^3.9.2 (as specified in pubspec.yaml)
 - **UI:** Material Design 3
 - **State Management:** Provider
 - **Fonts:** Google Fonts
@@ -25,7 +25,7 @@ AI Öğretmen (AI Teacher) is a personalized AI-powered educational Flutter appl
 
 ### Key Dependencies
 - `firebase_core`, `firebase_auth`, `cloud_firestore`, `firebase_storage`
-- `google_sign_in: ^5.0.0` (stable version)
+- `google_sign_in: ^5.0.0` (downgraded to older stable version for compatibility)
 - `google_generative_ai` (Gemini AI integration)
 - `image_picker`, `file_picker` (material uploads)
 - `provider` (state management)
