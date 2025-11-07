@@ -184,7 +184,7 @@ AI Öğretmen, öğrencilerin gerçek ders notlarını, ödevlerini ve çalışm
 
 #### ⚠️ API Key Güvenlik Açığı (KRİTİK)
 ```dart
-static const String _apiKey = 'AIzaSyDTbMcxi7Cl0_IFq1XGCUsu818HTlOIDOI';
+static const String _apiKey = 'AIzaSy***************************IOI'; // EXPOSED!
 ```
 - **SORUN**: Gemini API key **kaynak kodda açık şekilde** duruyor
 - **RİSK**: GitHub'a push edildiğinde herkes görebilir
@@ -718,7 +718,7 @@ Bir eğitim/öğrenme projesi olarak çok başarılı:
 **Güvenlik açıkları** (özellikle API key) ve **test eksikliği** - bunlar üretime geçmeden önce **mutlaka** düzeltilmeli.
 
 ### 🎯 Tavsiye
-Kritik güvenlik sorunlarını çözdükten sonra, bu uygulama **gerçek kullanıcılara** açılabilir ve **değerli geri bildirimler** toplanabilir. Pazar potansiyeli yüksek, teknoloji seçimleri doğru, uygulama fazla olmasa da düzenleme ve iyileştirmelerle **başarılı bir ürün** haline gelebilir.
+Kritik güvenlik sorunlarını çözdükten sonra, bu uygulama **gerçek kullanıcılara** açılabilir ve **değerli geri bildirimler** toplanabilir. Pazar potansiyeli yüksek, teknoloji seçimleri doğru, uygulamanın büyük eksikleri olmasa da düzenleme ve iyileştirmelerle **başarılı bir ürün** haline gelebilir.
 
 ---
 
