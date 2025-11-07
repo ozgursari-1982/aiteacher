@@ -2,6 +2,8 @@
 
 AI Öğretmen, öğrencilerin gerçek ders notlarını ve ödevlerini analiz ederek, sınav tarihlerine kadar kişiselleştirilmiş testler ve hazırlık planları sunan bir Flutter uygulamasıdır.
 
+> 📊 **Yeni!** [Detaylı Analiz Raporu](./DETAYLI_ANALIZ.md) | [Analiz Özeti](./ANALIZ_OZETI.md) - Uygulamanın artı ve eksileri hakkında kapsamlı analiz
+
 ## 🎯 Özellikler
 
 ### 👤 Öğrenci Yönetimi
