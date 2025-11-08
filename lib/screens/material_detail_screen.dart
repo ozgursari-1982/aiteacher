@@ -10,9 +10,7 @@ class MaterialDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Materyal Detayı'),
-      ),
+      appBar: AppBar(title: const Text('Materyal Detayı')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -51,15 +49,16 @@ class MaterialDetailScreen extends StatelessWidget {
                         ),
                       ],
                     ),
-                    if (material.description != null && material.description!.isNotEmpty) ...[
+                    if (material.description != null &&
+                        material.description!.isNotEmpty) ...[
                       const SizedBox(height: 16),
                       const Divider(),
                       const SizedBox(height: 8),
                       Text(
                         'Açıklama:',
                         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       const SizedBox(height: 8),
                       Text(
@@ -72,14 +71,14 @@ class MaterialDetailScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            
+
             // AI Analizi
             Text(
               '🤖 AI Analizi',
               style: Theme.of(context).textTheme.displaySmall,
             ),
             const SizedBox(height: 12),
-            
+
             if (material.aiAnalysis == null)
               Card(
                 color: Colors.orange.withOpacity(0.1),
@@ -99,9 +98,10 @@ class MaterialDetailScreen extends StatelessWidget {
                           children: [
                             Text(
                               'AI Analiz Ediliyor...',
-                              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                              style: Theme.of(context).textTheme.bodyLarge
+                                  ?.copyWith(
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.orange.shade700,
+                                    color: Colors.orange[700]!,
                                   ),
                             ),
                             const SizedBox(height: 4),
@@ -119,7 +119,7 @@ class MaterialDetailScreen extends StatelessWidget {
             else
               _buildAnalysisSection(context),
             const SizedBox(height: 24),
-            
+
             // Bilgi notu
             Container(
               padding: const EdgeInsets.all(12),
@@ -130,15 +130,12 @@ class MaterialDetailScreen extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  Icon(Icons.info_outline, color: Colors.blue.shade700, size: 20),
+                  Icon(Icons.info_outline, color: Colors.blue[700]!, size: 20),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       'AI analizi, yüklediğiniz materyalin içeriğini ve önemli noktalarını özetler. Bu bilgiler test oluşturmak için kullanılır.',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.blue.shade700,
-                      ),
+                      style: TextStyle(fontSize: 12, color: Colors.blue[700]!),
                     ),
                   ),
                 ],
@@ -179,25 +176,45 @@ class MaterialDetailScreen extends StatelessWidget {
 
     try {
       final analysisData = json.decode(material.aiAnalysis!);
-      
+
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildInfoCard(context, '📚 Belge Tipi', analysisData['documentType'] ?? 'Bilinmiyor'),
+          _buildInfoCard(
+            context,
+            '📚 Belge Tipi',
+            analysisData['documentType'] ?? 'Bilinmiyor',
+          ),
           const SizedBox(height: 12),
-          _buildInfoCard(context, '📖 Ana Konu', analysisData['mainTopic'] ?? 'Belirtilmemiş'),
+          _buildInfoCard(
+            context,
+            '📖 Ana Konu',
+            analysisData['mainTopic'] ?? 'Belirtilmemiş',
+          ),
           const SizedBox(height: 12),
           if (analysisData['questions'] != null)
-            _buildQuestionsCard(context, List<dynamic>.from(analysisData['questions'])),
+            _buildQuestionsCard(
+              context,
+              List<dynamic>.from(analysisData['questions']),
+            ),
           const SizedBox(height: 12),
           if (analysisData['subTopics'] != null)
-            _buildTopicsCard(context, List<dynamic>.from(analysisData['subTopics'])),
+            _buildTopicsCard(
+              context,
+              List<dynamic>.from(analysisData['subTopics']),
+            ),
           const SizedBox(height: 12),
           if (analysisData['questions'] != null)
-            _buildDifficultyCard(context, List<dynamic>.from(analysisData['questions'])),
+            _buildDifficultyCard(
+              context,
+              List<dynamic>.from(analysisData['questions']),
+            ),
           const SizedBox(height: 12),
           if (analysisData['teacherStyleInsights'] != null)
-            _buildTeacherInsightsCard(context, analysisData['teacherStyleInsights']),
+            _buildTeacherInsightsCard(
+              context,
+              analysisData['teacherStyleInsights'],
+            ),
         ],
       );
     } catch (e) {
@@ -216,7 +233,7 @@ class MaterialDetailScreen extends StatelessWidget {
                     'Analiz Parse Hatası',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: Colors.red.shade700,
+                      color: Colors.red[700]!,
                     ),
                   ),
                 ],
@@ -246,11 +263,21 @@ class MaterialDetailScreen extends StatelessWidget {
     return Card(
       elevation: 2,
       child: ListTile(
-        leading: Icon(Icons.info_outline, color: Theme.of(context).primaryColor),
-        title: Text(title, style: TextStyle(fontSize: 14, color: Colors.grey[600])),
+        leading: Icon(
+          Icons.info_outline,
+          color: Theme.of(context).primaryColor,
+        ),
+        title: Text(
+          title,
+          style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+        ),
         subtitle: Text(
           value,
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
         ),
       ),
     );
@@ -277,16 +304,22 @@ class MaterialDetailScreen extends StatelessWidget {
             const SizedBox(height: 12),
             ...questions.map((q) {
               final questionNumber = q['questionNumber']?.toString() ?? '?';
-              final preview = q['preview']?.toString() ?? 'Soru $questionNumber';
+              final preview =
+                  q['preview']?.toString() ?? 'Soru $questionNumber';
               final type = q['type']?.toString() ?? 'bilinmiyor';
               final difficulty = q['difficulty']?.toString() ?? 'orta';
-              
+
               return ListTile(
                 dense: true,
-                contentPadding: EdgeInsets.symmetric(vertical: 4, horizontal: 0),
+                contentPadding: EdgeInsets.symmetric(
+                  vertical: 4,
+                  horizontal: 0,
+                ),
                 leading: CircleAvatar(
                   radius: 16,
-                  backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
+                  backgroundColor: Theme.of(
+                    context,
+                  ).primaryColor.withOpacity(0.1),
                   child: Text(
                     questionNumber,
                     style: TextStyle(
@@ -297,7 +330,9 @@ class MaterialDetailScreen extends StatelessWidget {
                   ),
                 ),
                 title: Text(
-                  preview.length > 60 ? '${preview.substring(0, 60)}...' : preview,
+                  preview.length > 60
+                      ? '${preview.substring(0, 60)}...'
+                      : preview,
                   style: TextStyle(fontSize: 14),
                 ),
                 subtitle: Text(
@@ -314,7 +349,7 @@ class MaterialDetailScreen extends StatelessWidget {
 
   Widget _buildTopicsCard(BuildContext context, List<dynamic> subTopics) {
     if (subTopics.isEmpty) return SizedBox.shrink();
-    
+
     return Card(
       elevation: 2,
       child: Padding(
@@ -338,10 +373,7 @@ class MaterialDetailScreen extends StatelessWidget {
               runSpacing: 8,
               children: subTopics.map((topic) {
                 return Chip(
-                  label: Text(
-                    topic.toString(),
-                    style: TextStyle(fontSize: 13),
-                  ),
+                  label: Text(topic.toString(), style: TextStyle(fontSize: 13)),
                   backgroundColor: Colors.green.withOpacity(0.1),
                 );
               }).toList(),
@@ -358,9 +390,9 @@ class MaterialDetailScreen extends StatelessWidget {
       String diff = q['difficulty']?.toString() ?? 'orta';
       difficulties[diff] = (difficulties[diff] ?? 0) + 1;
     }
-    
+
     if (difficulties.isEmpty) return SizedBox.shrink();
-    
+
     return Card(
       elevation: 2,
       child: Padding(
@@ -388,7 +420,7 @@ class MaterialDetailScreen extends StatelessWidget {
               } else {
                 color = Colors.orange;
               }
-              
+
               return Padding(
                 padding: const EdgeInsets.only(bottom: 8),
                 child: Row(
@@ -400,7 +432,10 @@ class MaterialDetailScreen extends StatelessWidget {
                       ),
                     ),
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: color.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(12),
@@ -409,7 +444,7 @@ class MaterialDetailScreen extends StatelessWidget {
                         '${e.value}',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: color.shade700,
+                          color: color[700] ?? color,
                         ),
                       ),
                     ),
@@ -423,10 +458,13 @@ class MaterialDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTeacherInsightsCard(BuildContext context, Map<String, dynamic> insights) {
+  Widget _buildTeacherInsightsCard(
+    BuildContext context,
+    Map<String, dynamic> insights,
+  ) {
     return Card(
       elevation: 2,
-      color: Colors.blue.shade50,
+      color: Colors.blue[50]!,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -434,7 +472,7 @@ class MaterialDetailScreen extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(Icons.psychology, color: Colors.blue.shade700),
+                Icon(Icons.psychology, color: Colors.blue[700]!),
                 const SizedBox(width: 8),
                 Text(
                   '🎓 Öğretmen Stili İçgörüleri',
@@ -496,4 +534,3 @@ class MaterialDetailScreen extends StatelessWidget {
     );
   }
 }
-
