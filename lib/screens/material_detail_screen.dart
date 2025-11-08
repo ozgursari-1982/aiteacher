@@ -101,7 +101,7 @@ class MaterialDetailScreen extends StatelessWidget {
                               'AI Analiz Ediliyor...',
                               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.orange.shade700,
+                                    color: Colors.orange[700]!,
                                   ),
                             ),
                             const SizedBox(height: 4),
@@ -130,14 +130,14 @@ class MaterialDetailScreen extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  Icon(Icons.info_outline, color: Colors.blue.shade700, size: 20),
+                  Icon(Icons.info_outline, color: Colors.blue[700]!, size: 20),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       'AI analizi, yüklediğiniz materyalin içeriğini ve önemli noktalarını özetler. Bu bilgiler test oluşturmak için kullanılır.',
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.blue.shade700,
+                        color: Colors.blue[700]!,
                       ),
                     ),
                   ),
@@ -216,7 +216,7 @@ class MaterialDetailScreen extends StatelessWidget {
                     'Analiz Parse Hatası',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: Colors.red.shade700,
+                      color: Colors.red[700]!,
                     ),
                   ),
                 ],
@@ -409,7 +409,7 @@ class MaterialDetailScreen extends StatelessWidget {
                         '${e.value}',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: color.shade700,
+                          color: color[700] ?? color,
                         ),
                       ),
                     ),
@@ -426,7 +426,7 @@ class MaterialDetailScreen extends StatelessWidget {
   Widget _buildTeacherInsightsCard(BuildContext context, Map<String, dynamic> insights) {
     return Card(
       elevation: 2,
-      color: Colors.blue.shade50,
+      color: Colors.blue[50]!,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -434,7 +434,7 @@ class MaterialDetailScreen extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(Icons.psychology, color: Colors.blue.shade700),
+                Icon(Icons.psychology, color: Colors.blue[700]!),
                 const SizedBox(width: 8),
                 Text(
                   '🎓 Öğretmen Stili İçgörüleri',
